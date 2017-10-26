@@ -1403,9 +1403,18 @@ function degrees2radian (deg) {
 
 
 class Segment {
-    constructor(a, b) {
+    constructor(a, size, thickness) {
         this.a = a;
-        this.b = b;
+        this.size = size;
+        this.angle = 0;
+        this.b = this.getB();
+        this.thickness = thickness;
+    }
+
+    getB() {
+        let dx = this.size * Math.cos(this.angle); 
+        let dy = this.size * Math.sin(this.angle);
+        return new __WEBPACK_IMPORTED_MODULE_0_victor___default.a(this.a.x + dx, this.a.y + dy);
     }
 
     draw(context) {
@@ -1413,7 +1422,7 @@ class Segment {
         context.moveTo(this.a.x, this.a.y);
         context.lineTo(this.b.x, this.b.y);
         context.strokeStyle = "white";
-        context.lineWidth = 8;
+        context.lineWidth = this.thickness;
         context.stroke();
     }
 }
@@ -1474,11 +1483,14 @@ class Chain {
         this.segments = [];
 
         const size = 100;
+        const maxThickness = 10;
 
         for (var i = 0; i < length; i++) {
-            let a = new __WEBPACK_IMPORTED_MODULE_0_victor___default.a(i * size, 300);
-            let b = new __WEBPACK_IMPORTED_MODULE_0_victor___default.a((i + 1) * size, 300);
-            this.segments.push(new __WEBPACK_IMPORTED_MODULE_1__segment__["a" /* default */](a, b));
+            let parent = this.segments[i - 1];
+            let parentPos = parent === undefined ? new __WEBPACK_IMPORTED_MODULE_0_victor___default.a(300, 300) : parent.b.clone();
+            let thickness = maxThickness * (1 - i / length);
+
+            this.segments.push(new __WEBPACK_IMPORTED_MODULE_1__segment__["a" /* default */](parentPos, size, thickness));
         }
     }
 

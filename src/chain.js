@@ -7,11 +7,14 @@ class Chain {
         this.segments = [];
 
         const size = 100;
+        const maxThickness = 10;
 
         for (var i = 0; i < length; i++) {
-            let a = new Victor(i * size, 300);
-            let b = new Victor((i + 1) * size, 300);
-            this.segments.push(new Segment(a, b));
+            let parent = this.segments[i - 1];
+            let parentPos = parent === undefined ? new Victor(300, 300) : parent.b.clone();
+            let thickness = maxThickness * (1 - i / length);
+
+            this.segments.push(new Segment(parentPos, size, thickness));
         }
     }
 
