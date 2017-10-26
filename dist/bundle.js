@@ -1403,18 +1403,32 @@ function degrees2radian (deg) {
 
 
 class Segment {
-    constructor(a, size, thickness) {
+    constructor(a, magnitude, thickness) {
         this.a = a;
-        this.size = size;
+        this.magnitude = magnitude;
         this.angle = 0;
         this.b = this.getB();
         this.thickness = thickness;
     }
 
     getB() {
-        let dx = this.size * Math.cos(this.angle); 
-        let dy = this.size * Math.sin(this.angle);
+        let dx = this.magnitude * Math.cos(this.angle); 
+        let dy = this.magnitude * Math.sin(this.angle);
         return new __WEBPACK_IMPORTED_MODULE_0_victor___default.a(this.a.x + dx, this.a.y + dy);
+    }
+
+    moveTowards(x, y) {
+        let target = new __WEBPACK_IMPORTED_MODULE_0_victor___default.a(x, y);
+        let dir = new __WEBPACK_IMPORTED_MODULE_0_victor___default.a(target.x - this.a.x, target.y - this.a.y);
+
+        this.angle = Math.atan2(dir.y, dir.x);
+        dir.x = dir.x * this.magnitude / dir.magnitude();
+        dir.y = dir.y * this.magnitude / dir.magnitude();
+        
+        dir.multiply(new __WEBPACK_IMPORTED_MODULE_0_victor___default.a(-1, -1));
+        this.a.x = target.x + dir.x;
+        this.a.y = target.y + dir.y;
+        this.b = this.getB();
     }
 
     draw(context) {
@@ -1451,18 +1465,47 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 
-var canvas = document.getElementById('canvas');
-var chain = new __WEBPACK_IMPORTED_MODULE_0__chain__["a" /* default */](5);
-var context;
+function init() {
+    const frameRate = 60;
+    const millisBetweenUpdate = 1000 / frameRate;
 
-if (canvas && canvas.getContext) {
+    canvas.addEventListener("mousemove", mouseMove, false);
+    setInterval(update, millisBetweenUpdate);
+    resize();
+
     context = canvas.getContext("2d");
+}
+
+function mouseMove(e) {
+    currentMousePos.x = e.layerX;
+    currentMousePos.y = e.layerY;
+}
+
+function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+}
+
+function update() {
+    context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    resize();
     context.fillStyle = "rgb(50, 50, 50)";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
+    chain.moveTowards(currentMousePos.x, currentMousePos.y);
     chain.draw(context);
+}
+
+var canvas = document.getElementById('canvas');
+var chain = new __WEBPACK_IMPORTED_MODULE_0__chain__["a" /* default */](5);
+var context;
+var currentMousePos = {
+    x: 0,
+    y: 0
+};
+
+if (canvas && canvas.getContext) {
+    init();
 }
 
 
@@ -1482,7 +1525,7 @@ class Chain {
         this.length = length;
         this.segments = [];
 
-        const size = 100;
+        const magnitude = 100;
         const maxThickness = 10;
 
         for (var i = 0; i < length; i++) {
@@ -1490,7 +1533,7 @@ class Chain {
             let parentPos = parent === undefined ? new __WEBPACK_IMPORTED_MODULE_0_victor___default.a(300, 300) : parent.b.clone();
             let thickness = maxThickness * (1 - i / length);
 
-            this.segments.push(new __WEBPACK_IMPORTED_MODULE_1__segment__["a" /* default */](parentPos, size, thickness));
+            this.segments.push(new __WEBPACK_IMPORTED_MODULE_1__segment__["a" /* default */](parentPos, magnitude, thickness));
         }
     }
 
@@ -1498,6 +1541,16 @@ class Chain {
         for (var i = 0; i < this.segments.length; i++) {
             let segment = this.segments[i];
             console.log(segment);
+        }
+    }
+
+    moveTowards(x, y) {
+        for (var i = this.segments.length - 1; i >= 0; i--) {
+            let segment = this.segments[i];
+            let child = this.segments[i + 1];
+            let target = child === undefined ? new __WEBPACK_IMPORTED_MODULE_0_victor___default.a(x, y) : child.a.clone();
+
+            segment.moveTowards(target.x, target.y);
         }
     }
 

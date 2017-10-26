@@ -3,7 +3,7 @@ import Segment from './segment';
 
 function init() {
     const frameRate = 60;
-    const millisBetweenUpdate = 1 / frameRate;
+    const millisBetweenUpdate = 1000 / frameRate;
 
     canvas.addEventListener("mousemove", mouseMove, false);
     setInterval(update, millisBetweenUpdate);
