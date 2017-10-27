@@ -1,6 +1,6 @@
 import * as Utils from './utils';
 import Victor from 'victor';
-import Ball from './ball';
+import BallManager from './ball_manager';
 import Spider from './spider';
 
 function init() {
@@ -8,7 +8,8 @@ function init() {
     const millisBetweenUpdate = 1000 / frameRate;
 
     canvas.addEventListener("mousemove", mouseMove, false);
-    canvas.addEventListener("mousedown", mouseDown, false);
+    canvas.addEventListener("mousedown", mouseDown, true);
+    canvas.addEventListener("mouseup", mouseUp, false);
     setInterval(update, millisBetweenUpdate);
     resize();
 
@@ -21,7 +22,11 @@ function mouseMove(e) {
 }
 
 function mouseDown(e) {
-    spawnBall(e.x, e.y);
+    shouldSpawnBall = true;
+}
+
+function mouseUp(e) {
+    shouldSpawnBall = false;
 }
 
 function resize() {
@@ -33,38 +38,34 @@ function update() {
     context.clearRect(0, 0, window.innerWidth, window.innerHeight);
     resize();
 
-    let grabbableItems = balls.length === 0 ? [currentMousePos] : [];
-
-    for (let i = 0; i < balls.length; i++) {
-        let ball = balls[i];
-    
-        grabbableItems.push(ball.position);
-        ball.update();
-        ball.draw(context);
+    if (shouldSpawnBall) {
+        ballManager.addBall(currentMousePos.x, currentMousePos.y);
     }
+
+    ballManager.update();
+    ballManager.draw(context);
 
     for (let i = 0; i < spiders.length; i++) {
         let spider = spiders[i];
-        spider.update(grabbableItems);
+        spider.update(ballManager.balls);
         spider.draw(context);
     }
-}
-
-function spawnBall(x, y) {
-    balls.push(new Ball(new Victor(x, y)));
 }
 
 const segCount = 5;
 const segMag = 75;
 
 var spiders = [
-    new Spider(new Victor(window.innerWidth / 2, window.innerHeight / 2)),
-]
-var balls = [
+    new Spider(new Victor(window.innerWidth / 2, 0)),
+    new Spider(new Victor(0, window.innerHeight / 2)),
+    new Spider(new Victor(window.innerWidth, window.innerHeight / 2)),
+    new Spider(new Victor(window.innerWidth / 2, window.innerHeight)),
 ];
+var ballManager = new BallManager;
 var canvas = document.getElementById('canvas');
 var context;
 var currentMousePos = new Victor(0, 0);
+var shouldSpawnBall = false;
 
 if (canvas && canvas.getContext) {
     init();

@@ -2063,9 +2063,9 @@ var _victor = __webpack_require__(0);
 
 var _victor2 = _interopRequireDefault(_victor);
 
-var _ball = __webpack_require__(13);
+var _ball_manager = __webpack_require__(14);
 
-var _ball2 = _interopRequireDefault(_ball);
+var _ball_manager2 = _interopRequireDefault(_ball_manager);
 
 var _spider = __webpack_require__(10);
 
@@ -2080,7 +2080,8 @@ function init() {
     var millisBetweenUpdate = 1000 / frameRate;
 
     canvas.addEventListener("mousemove", mouseMove, false);
-    canvas.addEventListener("mousedown", mouseDown, false);
+    canvas.addEventListener("mousedown", mouseDown, true);
+    canvas.addEventListener("mouseup", mouseUp, false);
     setInterval(update, millisBetweenUpdate);
     resize();
 
@@ -2093,7 +2094,11 @@ function mouseMove(e) {
 }
 
 function mouseDown(e) {
-    spawnBall(e.x, e.y);
+    shouldSpawnBall = true;
+}
+
+function mouseUp(e) {
+    shouldSpawnBall = false;
 }
 
 function resize() {
@@ -2105,35 +2110,29 @@ function update() {
     context.clearRect(0, 0, window.innerWidth, window.innerHeight);
     resize();
 
-    var grabbableItems = balls.length === 0 ? [currentMousePos] : [];
-
-    for (var i = 0; i < balls.length; i++) {
-        var ball = balls[i];
-
-        grabbableItems.push(ball.position);
-        ball.update();
-        ball.draw(context);
+    if (shouldSpawnBall) {
+        ballManager.addBall(currentMousePos.x, currentMousePos.y);
     }
 
-    for (var _i = 0; _i < spiders.length; _i++) {
-        var spider = spiders[_i];
-        spider.update(grabbableItems);
+    ballManager.update();
+    ballManager.draw(context);
+
+    for (var i = 0; i < spiders.length; i++) {
+        var spider = spiders[i];
+        spider.update(ballManager.balls);
         spider.draw(context);
     }
-}
-
-function spawnBall(x, y) {
-    balls.push(new _ball2.default(new _victor2.default(x, y)));
 }
 
 var segCount = 5;
 var segMag = 75;
 
-var spiders = [new _spider2.default(new _victor2.default(window.innerWidth / 2, window.innerHeight / 2))];
-var balls = [];
+var spiders = [new _spider2.default(new _victor2.default(window.innerWidth / 2, 0)), new _spider2.default(new _victor2.default(0, window.innerHeight / 2)), new _spider2.default(new _victor2.default(window.innerWidth, window.innerHeight / 2)), new _spider2.default(new _victor2.default(window.innerWidth / 2, window.innerHeight))];
+var ballManager = new _ball_manager2.default();
 var canvas = document.getElementById('canvas');
 var context;
 var currentMousePos = new _victor2.default(0, 0);
+var shouldSpawnBall = false;
 
 if (canvas && canvas.getContext) {
     init();
@@ -2189,20 +2188,35 @@ var Spider = function () {
         value: function update(grabbableItems) {
             var _this = this;
 
+            var grabRange = 500;
+
             var _loop = function _loop(i) {
                 var leg = _this.legs[i];
 
+                grabbableItems = grabbableItems.filter(function (item) {
+                    var distSquared = Utils.getEuclideanDistanceSquared(item.position, leg.getEndVector());
+                    return item.isAlive && distSquared <= grabRange * grabRange;
+                });
+
+                if (grabbableItems.length === 0) {
+                    //leg.moveTowards(this.centre.x, this.centre.y);
+                    leg.moveTowards(_this.centre.x, _this.centre.y);
+                    return 'continue';
+                }
+
                 var closestItem = grabbableItems.reduce(function (a, b) {
-                    var distA = Utils.getEuclideanDistanceSquared(a, leg.getEndVector());
-                    var distB = Utils.getEuclideanDistanceSquared(b, leg.getEndVector());
+                    var distA = Utils.getEuclideanDistanceSquared(a.position, leg.getEndVector());
+                    var distB = Utils.getEuclideanDistanceSquared(b.position, leg.getEndVector());
                     return distA < distB ? a : b;
                 });
 
-                leg.moveTowards(closestItem.x, closestItem.y);
+                leg.moveTowards(closestItem.position.x, closestItem.position.y);
             };
 
             for (var i = 0; i < this.legs.length; i++) {
-                _loop(i);
+                var _ret = _loop(i);
+
+                if (_ret === 'continue') continue;
             }
         }
     }, {
@@ -2437,11 +2451,15 @@ var Ball = function () {
         _classCallCheck(this, Ball);
 
         this.position = position;
-        this.velocity = new _victor2.default(0, 0);
+        this.velocity = new _victor2.default(Utils.getRandIntBetween(-16, 16), Utils.getRandIntBetween(-32, -8));
+        this.previousVelocity = this.velocity.clone();
         this.inverseMass = Math.random();
+        this.isAlive = true;
+        this.timeDead = 0;
+        this.alpha = 1;
 
-        var minRadius = 10;
-        var maxRadius = 30;
+        var minRadius = 5;
+        var maxRadius = 40;
 
         this.radius = maxRadius - this.inverseMass * (maxRadius - minRadius);
     }
@@ -2449,7 +2467,7 @@ var Ball = function () {
     _createClass(Ball, [{
         key: 'update',
         value: function update() {
-            var gravity = 2;
+            var gravity = 1.5;
             this.velocity.y += gravity;
             this.position.add(this.velocity);
 
@@ -2457,13 +2475,25 @@ var Ball = function () {
                 this.position.y = window.innerHeight - this.radius;
                 this.velocity.y *= -this.inverseMass;
             }
+
+            // Get the change in velocity between frames.
+            // If it's some arbitrarily small amount, we've
+            // hit the deck and stopped moving
+            var deltaVel = Math.abs(this.previousVelocity.y - this.velocity.y);
+            this.isAlive = deltaVel > 0.1;
+
+            if (this.isAlive === false) {
+                this.timeDead += 1000 / 60;
+            }
+
+            this.previousVelocity = this.velocity.clone();
         }
     }, {
         key: 'draw',
         value: function draw(context) {
             context.beginPath();
             context.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
-            context.fillStyle = "black";
+            context.fillStyle = "rgba(0, 0, 0, " + this.alpha + ")";
             context.fill();
         }
     }]);
@@ -2472,6 +2502,75 @@ var Ball = function () {
 }();
 
 exports.default = Ball;
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _victor = __webpack_require__(0);
+
+var _victor2 = _interopRequireDefault(_victor);
+
+var _ball = __webpack_require__(13);
+
+var _ball2 = _interopRequireDefault(_ball);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var BallManager = function () {
+    function BallManager() {
+        _classCallCheck(this, BallManager);
+
+        this.balls = [];
+    }
+
+    _createClass(BallManager, [{
+        key: 'addBall',
+        value: function addBall(x, y) {
+            this.balls.push(new _ball2.default(new _victor2.default(x, y)));
+        }
+    }, {
+        key: 'update',
+        value: function update() {
+            var timeAllowedDead = 1500;
+
+            for (var i = 0; i < this.balls.length; i++) {
+                var ball = this.balls[i];
+                ball.update();
+
+                if (ball.isAlive === false) {
+                    ball.alpha = 1 - ball.timeDead / timeAllowedDead;
+                    if (ball.timeDead >= timeAllowedDead) {
+                        this.balls.splice(this.balls.indexOf(ball), 1);
+                    }
+                }
+            }
+        }
+    }, {
+        key: 'draw',
+        value: function draw(context) {
+            for (var i = 0; i < this.balls.length; i++) {
+                var ball = this.balls[i];
+                ball.draw(context);
+            }
+        }
+    }]);
+
+    return BallManager;
+}();
+
+exports.default = BallManager;
 
 /***/ })
 /******/ ]);
