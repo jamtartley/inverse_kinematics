@@ -25,6 +25,11 @@ class Chain {
         }
     }
 
+    getEndVector() {
+        let end = this.segments[this.segments.length - 1];
+        return end.b.clone();
+    }
+
     moveTowards(x, y) {
         for (var i = this.segments.length - 1; i >= 0; i--) {
             let segment = this.segments[i];

@@ -2092,7 +2092,11 @@ var _victor = __webpack_require__(0);
 
 var _victor2 = _interopRequireDefault(_victor);
 
-var _chain = __webpack_require__(10);
+var _gravity_item = __webpack_require__(10);
+
+var _gravity_item2 = _interopRequireDefault(_gravity_item);
+
+var _chain = __webpack_require__(11);
 
 var _chain2 = _interopRequireDefault(_chain);
 
@@ -2127,12 +2131,36 @@ function update() {
     context.clearRect(0, 0, window.innerWidth, window.innerHeight);
     resize();
 
-    for (var i = 0; i < chains.length; i++) {
+    var _loop = function _loop(i) {
         var chain = chains[i];
 
-        chain.moveTowards(currentMousePos.x, currentMousePos.y);
+        //chain.moveTowards(currentMousePos.x, currentMousePos.y);
+        var closest = gravityItems.reduce(function (a, b) {
+            var distA = getEuclideanDistance(a.position, chain.getEndVector());
+            var distB = getEuclideanDistance(b.position, chain.getEndVector());
+            return distA < distB ? a : b;
+        });
+
+        chain.moveTowards(closest.position.x, closest.position.y);
         chain.draw(context);
+    };
+
+    for (var i = 0; i < chains.length; i++) {
+        _loop(i);
     }
+
+    for (var i = 0; i < gravityItems.length; i++) {
+        var gravityItem = gravityItems[i];
+
+        gravityItem.update();
+        gravityItem.draw(context);
+    }
+}
+
+function getEuclideanDistance(a, b) {
+    var dx = a.x - b.x;
+    var dy = a.y - b.y;
+    return Math.sqrt(dx * dx + dy * dy);
 }
 
 function getChains() {}
@@ -2141,6 +2169,7 @@ var segCount = 5;
 var segMag = 75;
 
 var chains = [new _chain2.default(segCount, segMag, new _victor2.default(0, 200)), new _chain2.default(segCount, segMag, new _victor2.default(0, 250)), new _chain2.default(segCount, segMag, new _victor2.default(0, 300)), new _chain2.default(segCount, segMag, new _victor2.default(0, 350)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 200)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 250)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 300)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 350))];
+var gravityItems = [new _gravity_item2.default(new _victor2.default(100, 100)), new _gravity_item2.default(new _victor2.default(500, 500))];
 var canvas = document.getElementById('canvas');
 var context;
 var currentMousePos = {
@@ -2154,6 +2183,67 @@ if (canvas && canvas.getContext) {
 
 /***/ }),
 /* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _victor = __webpack_require__(0);
+
+var _victor2 = _interopRequireDefault(_victor);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var GravityItem = function () {
+    function GravityItem(position) {
+        _classCallCheck(this, GravityItem);
+
+        this.position = position;
+        this.velocity = new _victor2.default(8, 0);
+    }
+
+    _createClass(GravityItem, [{
+        key: "update",
+        value: function update() {
+            var gravity = 20;
+            this.velocity.y += gravity * 1 / 60;
+            this.position.add(this.velocity);
+
+            if (this.position.x < 0 || this.position.x > window.innerWidth) {
+                this.velocity.x *= -1;
+            }
+
+            if (this.position.y < 0 || this.position.y > window.innerHeight) {
+                this.velocity.y *= -1;
+            }
+        }
+    }, {
+        key: "draw",
+        value: function draw(context) {
+            var radius = 20;
+
+            context.beginPath();
+            context.arc(this.position.x, this.position.y, radius, 0, 2 * Math.PI, false);
+            context.fillStyle = "white";
+            context.fill();
+        }
+    }]);
+
+    return GravityItem;
+}();
+
+exports.default = GravityItem;
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2203,6 +2293,12 @@ var Chain = function () {
                 var segment = this.segments[i];
                 console.log(segment);
             }
+        }
+    }, {
+        key: 'getEndVector',
+        value: function getEndVector() {
+            var end = this.segments[this.segments.length - 1];
+            return end.b.clone();
         }
     }, {
         key: 'moveTowards',
