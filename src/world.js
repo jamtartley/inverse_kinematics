@@ -58,8 +58,7 @@ const segCount = 5;
 const segMag = 75;
 
 var spiders = [
-    new Spider(new Victor(0, window.innerHeight / 2)),
-    new Spider(new Victor(window.innerWidth, window.innerHeight / 2)),
+    new Spider(new Victor(window.innerWidth / 2, window.innerHeight / 2)),
 ]
 var gravityItems = [
 ];

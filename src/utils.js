@@ -5,9 +5,13 @@ export function getRandIntBetween(min, max) {
 }
 
 export function getEuclideanDistance(a, b) {
+    return Math.sqrt(getEuclideanDistanceSquared(a, b));
+}
+
+export function getEuclideanDistanceSquared(a, b) {
     let dx = a.x - b.x;
     let dy = a.y - b.y;
-    return Math.sqrt(dx * dx + dy * dy);
+    return dx * dx + dy * dy;
 }
 
 export function toRadians(degrees) {

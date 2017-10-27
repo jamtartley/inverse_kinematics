@@ -4,7 +4,7 @@ import Victor from 'victor';
 class GravityItem {
     constructor(position) {
         this.position = position;
-        this.velocity = new Victor(Utils.getRandIntBetween(4, 8), Utils.getRandIntBetween(4, 8));
+        this.velocity = new Victor(Utils.getRandIntBetween(-8, 8), Utils.getRandIntBetween(-8, 8));
         this.radius = 10;
         this.diameter = this.radius * 2;
     }
@@ -37,7 +37,7 @@ class GravityItem {
     draw(context) {
         context.beginPath();
         context.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
-        context.fillStyle = "white";
+        context.fillStyle = "black";
         context.fill();
     }
 }

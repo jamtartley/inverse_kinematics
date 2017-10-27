@@ -2162,7 +2162,7 @@ function spawnGravityItem(x, y) {
 var segCount = 5;
 var segMag = 75;
 
-var spiders = [new _spider2.default(new _victor2.default(0, window.innerHeight / 2)), new _spider2.default(new _victor2.default(window.innerWidth, window.innerHeight / 2))];
+var spiders = [new _spider2.default(new _victor2.default(window.innerWidth / 2, window.innerHeight / 2))];
 var gravityItems = [];
 var canvas = document.getElementById('canvas');
 var context;
@@ -2204,7 +2204,7 @@ var GravityItem = function () {
         _classCallCheck(this, GravityItem);
 
         this.position = position;
-        this.velocity = new _victor2.default(Utils.getRandIntBetween(4, 8), Utils.getRandIntBetween(4, 8));
+        this.velocity = new _victor2.default(Utils.getRandIntBetween(-8, 8), Utils.getRandIntBetween(-8, 8));
         this.radius = 10;
         this.diameter = this.radius * 2;
     }
@@ -2241,7 +2241,7 @@ var GravityItem = function () {
         value: function draw(context) {
             context.beginPath();
             context.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
-            context.fillStyle = "white";
+            context.fillStyle = "black";
             context.fill();
         }
     }]);
@@ -2364,6 +2364,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.getRandIntBetween = getRandIntBetween;
 exports.getEuclideanDistance = getEuclideanDistance;
+exports.getEuclideanDistanceSquared = getEuclideanDistanceSquared;
 exports.toRadians = toRadians;
 exports.getPointOnCircle = getPointOnCircle;
 
@@ -2378,9 +2379,13 @@ function getRandIntBetween(min, max) {
 }
 
 function getEuclideanDistance(a, b) {
+    return Math.sqrt(getEuclideanDistanceSquared(a, b));
+}
+
+function getEuclideanDistanceSquared(a, b) {
     var dx = a.x - b.x;
     var dy = a.y - b.y;
-    return Math.sqrt(dx * dx + dy * dy);
+    return dx * dx + dy * dy;
 }
 
 function toRadians(degrees) {
@@ -2426,13 +2431,12 @@ var Spider = function () {
         this.legs = [];
         this.radius = 30;
 
-        var legCount = 4;
-        var legSpread = 150;
+        var legCount = 8;
+        var legSpread = 360;
         var betweenLeg = legSpread / legCount;
-        var minLegAngle = -legSpread / 2;
 
         for (var i = 0; i < legCount; i++) {
-            var position = Utils.getPointOnCircle(centre, this.radius, minLegAngle + i * betweenLeg);
+            var position = Utils.getPointOnCircle(centre, this.radius, i * betweenLeg);
             this.legs.push(new _chain2.default(5, 75, position));
         }
     }
@@ -2446,8 +2450,8 @@ var Spider = function () {
                 var leg = _this.legs[i];
 
                 var closestItem = grabbableItems.reduce(function (a, b) {
-                    var distA = Utils.getEuclideanDistance(a, leg.getEndVector());
-                    var distB = Utils.getEuclideanDistance(b, leg.getEndVector());
+                    var distA = Utils.getEuclideanDistanceSquared(a, leg.getEndVector());
+                    var distB = Utils.getEuclideanDistanceSquared(b, leg.getEndVector());
                     return distA < distB ? a : b;
                 });
 

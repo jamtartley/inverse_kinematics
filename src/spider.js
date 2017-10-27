@@ -7,13 +7,12 @@ class Spider {
         this.legs = [];
         this.radius = 30;
 
-        const legCount = 4;
-        const legSpread = 150;
+        const legCount = 8;
+        const legSpread = 360;
         const betweenLeg = legSpread / legCount;
-        const minLegAngle = -legSpread / 2;
 
         for (let i = 0; i < legCount; i++) {
-            let position = Utils.getPointOnCircle(centre, this.radius, minLegAngle + i * betweenLeg); 
+            let position = Utils.getPointOnCircle(centre, this.radius, i * betweenLeg); 
             this.legs.push(new Chain(5, 75, position));    
         }
     }
@@ -23,8 +22,8 @@ class Spider {
             let leg = this.legs[i];
 
             let closestItem = grabbableItems.reduce(function(a, b) {
-                let distA = Utils.getEuclideanDistance(a, leg.getEndVector());
-                let distB = Utils.getEuclideanDistance(b, leg.getEndVector());
+                let distA = Utils.getEuclideanDistanceSquared(a, leg.getEndVector());
+                let distB = Utils.getEuclideanDistanceSquared(b, leg.getEndVector());
                 return distA < distB ? a : b;
             });
 
