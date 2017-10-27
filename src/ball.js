@@ -19,11 +19,13 @@ class Ball {
 
     update() {
         const gravity = 1.5;
+        const friction = 0.95;
         this.velocity.y += gravity;
         this.position.add(this.velocity);
 
         if (this.position.y + this.radius > window.innerHeight) {
             this.position.y = window.innerHeight - this.radius;
+            this.velocity.x *= friction;
             this.velocity.y *= -this.inverseMass;
         }
 
