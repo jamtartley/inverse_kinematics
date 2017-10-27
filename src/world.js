@@ -1,3 +1,4 @@
+import * as Utils from './utils';
 import Victor from 'victor';
 import GravityItem from './gravity_item';
 import Chain from './chain';
@@ -39,8 +40,8 @@ function update() {
 
         if (gravityItems.length !== 0) {
             let closestItem = gravityItems.reduce(function(a, b) {
-                let distA = getEuclideanDistance(a.position, chain.getEndVector());
-                let distB = getEuclideanDistance(b.position, chain.getEndVector());
+                let distA = Utils.getEuclideanDistance(a.position, chain.getEndVector());
+                let distB = Utils.getEuclideanDistance(b.position, chain.getEndVector());
                 return distA < distB ? a : b;
             });
 
@@ -63,12 +64,6 @@ function spawnGravityItem(x, y) {
     gravityItems.push(new GravityItem(new Victor(x, y)));
 }
 
-function getEuclideanDistance(a, b) {
-    let dx = a.x - b.x;
-    let dy = a.y - b.y;
-    return Math.sqrt(dx * dx + dy * dy);
-}
-
 function getChains() {
 }
 
@@ -86,6 +81,7 @@ var chains = [
     new Chain(segCount, segMag, new Victor(window.innerWidth, 350)),
 ];
 var gravityItems = [
+    new GravityItem(new Victor(20, 20))
 ];
 var canvas = document.getElementById('canvas');
 var context;

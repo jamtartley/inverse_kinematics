@@ -2088,6 +2088,10 @@ __webpack_require__(9);
 "use strict";
 
 
+var _utils = __webpack_require__(12);
+
+var Utils = _interopRequireWildcard(_utils);
+
 var _victor = __webpack_require__(0);
 
 var _victor2 = _interopRequireDefault(_victor);
@@ -2105,6 +2109,8 @@ var _segment = __webpack_require__(1);
 var _segment2 = _interopRequireDefault(_segment);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function init() {
     var frameRate = 60;
@@ -2142,8 +2148,8 @@ function update() {
 
         if (gravityItems.length !== 0) {
             var closestItem = gravityItems.reduce(function (a, b) {
-                var distA = getEuclideanDistance(a.position, chain.getEndVector());
-                var distB = getEuclideanDistance(b.position, chain.getEndVector());
+                var distA = Utils.getEuclideanDistance(a.position, chain.getEndVector());
+                var distB = Utils.getEuclideanDistance(b.position, chain.getEndVector());
                 return distA < distB ? a : b;
             });
 
@@ -2170,19 +2176,13 @@ function spawnGravityItem(x, y) {
     gravityItems.push(new _gravity_item2.default(new _victor2.default(x, y)));
 }
 
-function getEuclideanDistance(a, b) {
-    var dx = a.x - b.x;
-    var dy = a.y - b.y;
-    return Math.sqrt(dx * dx + dy * dy);
-}
-
 function getChains() {}
 
 var segCount = 5;
 var segMag = 75;
 
 var chains = [new _chain2.default(segCount, segMag, new _victor2.default(0, 200)), new _chain2.default(segCount, segMag, new _victor2.default(0, 250)), new _chain2.default(segCount, segMag, new _victor2.default(0, 300)), new _chain2.default(segCount, segMag, new _victor2.default(0, 350)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 200)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 250)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 300)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 350))];
-var gravityItems = [];
+var gravityItems = [new _gravity_item2.default(new _victor2.default(20, 20))];
 var canvas = document.getElementById('canvas');
 var context;
 var currentMousePos = new _victor2.default(0, 0);
@@ -2204,11 +2204,17 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _utils = __webpack_require__(12);
+
+var Utils = _interopRequireWildcard(_utils);
+
 var _victor = __webpack_require__(0);
 
 var _victor2 = _interopRequireDefault(_victor);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2217,31 +2223,28 @@ var GravityItem = function () {
         _classCallCheck(this, GravityItem);
 
         this.position = position;
-        this.velocity = new _victor2.default(8, 0);
+        this.velocity = new _victor2.default(Utils.getRandIntBetween(4, 8), 0);
+        this.radius = 20;
     }
 
     _createClass(GravityItem, [{
-        key: "update",
+        key: 'update',
         value: function update() {
-            var gravity = 20;
-            this.velocity.y += gravity * 1 / 60;
-            this.position.add(this.velocity);
-
-            if (this.position.x < 0 || this.position.x > window.innerWidth) {
+            if (this.position.x - this.radius < 0 || this.position.x + this.radius > window.innerWidth) {
                 this.velocity.x *= -1;
             }
 
-            if (this.position.y < 0 || this.position.y > window.innerHeight) {
+            if (this.position.y - this.radius < 0 || this.position.y + this.radius > window.innerHeight) {
                 this.velocity.y *= -1;
             }
+
+            this.position.add(this.velocity);
         }
     }, {
-        key: "draw",
+        key: 'draw',
         value: function draw(context) {
-            var radius = 20;
-
             context.beginPath();
-            context.arc(this.position.x, this.position.y, radius, 0, 2 * Math.PI, false);
+            context.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
             context.fillStyle = "white";
             context.fill();
         }
@@ -2352,6 +2355,28 @@ var Chain = function () {
 }();
 
 exports.default = Chain;
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.getRandIntBetween = getRandIntBetween;
+exports.getEuclideanDistance = getEuclideanDistance;
+function getRandIntBetween(min, max) {
+    return Math.floor(Math.random() * (max - min)) + min;
+}
+
+function getEuclideanDistance(a, b) {
+    var dx = a.x - b.x;
+    var dy = a.y - b.y;
+    return Math.sqrt(dx * dx + dy * dy);
+}
 
 /***/ })
 /******/ ]);
