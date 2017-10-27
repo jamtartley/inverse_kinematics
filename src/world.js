@@ -8,6 +8,7 @@ function init() {
     const millisBetweenUpdate = 1000 / frameRate;
 
     canvas.addEventListener("mousemove", mouseMove, false);
+    canvas.addEventListener("mousedown", mouseDown, false);
     setInterval(update, millisBetweenUpdate);
     resize();
 
@@ -15,8 +16,12 @@ function init() {
 }
 
 function mouseMove(e) {
-    currentMousePos.x = e.layerX;
-    currentMousePos.y = e.layerY;
+    currentMousePos.x = e.x;
+    currentMousePos.y = e.y;
+}
+
+function mouseDown(e) {
+    spawnGravityItem(e.x, e.y);
 }
 
 function resize() {
@@ -31,7 +36,10 @@ function update() {
     for (let i = 0; i < chains.length; i++) {
         let chain = chains[i];
 
-        //chain.moveTowards(currentMousePos.x, currentMousePos.y);
+        if (gravityItems.length === 0) {
+            continue;
+        }
+
         let closest = gravityItems.reduce(function(a, b) {
             let distA = getEuclideanDistance(a.position, chain.getEndVector());
             let distB = getEuclideanDistance(b.position, chain.getEndVector());
@@ -48,6 +56,10 @@ function update() {
         gravityItem.update();
         gravityItem.draw(context);
     }
+}
+
+function spawnGravityItem(x, y) {
+    gravityItems.push(new GravityItem(new Victor(x, y)));
 }
 
 function getEuclideanDistance(a, b) {
@@ -73,8 +85,6 @@ var chains = [
     new Chain(segCount, segMag, new Victor(window.innerWidth, 350)),
 ];
 var gravityItems = [
-    new GravityItem(new Victor(100, 100)),
-    new GravityItem(new Victor(500, 500)),
 ];
 var canvas = document.getElementById('canvas');
 var context;

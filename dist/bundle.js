@@ -2111,6 +2111,7 @@ function init() {
     var millisBetweenUpdate = 1000 / frameRate;
 
     canvas.addEventListener("mousemove", mouseMove, false);
+    canvas.addEventListener("mousedown", mouseDown, false);
     setInterval(update, millisBetweenUpdate);
     resize();
 
@@ -2118,8 +2119,12 @@ function init() {
 }
 
 function mouseMove(e) {
-    currentMousePos.x = e.layerX;
-    currentMousePos.y = e.layerY;
+    currentMousePos.x = e.x;
+    currentMousePos.y = e.y;
+}
+
+function mouseDown(e) {
+    spawnGravityItem(e.x, e.y);
 }
 
 function resize() {
@@ -2134,7 +2139,10 @@ function update() {
     var _loop = function _loop(i) {
         var chain = chains[i];
 
-        //chain.moveTowards(currentMousePos.x, currentMousePos.y);
+        if (gravityItems.length === 0) {
+            return 'continue';
+        }
+
         var closest = gravityItems.reduce(function (a, b) {
             var distA = getEuclideanDistance(a.position, chain.getEndVector());
             var distB = getEuclideanDistance(b.position, chain.getEndVector());
@@ -2146,7 +2154,9 @@ function update() {
     };
 
     for (var i = 0; i < chains.length; i++) {
-        _loop(i);
+        var _ret = _loop(i);
+
+        if (_ret === 'continue') continue;
     }
 
     for (var i = 0; i < gravityItems.length; i++) {
@@ -2155,6 +2165,10 @@ function update() {
         gravityItem.update();
         gravityItem.draw(context);
     }
+}
+
+function spawnGravityItem(x, y) {
+    gravityItems.push(new _gravity_item2.default(new _victor2.default(x, y)));
 }
 
 function getEuclideanDistance(a, b) {
@@ -2169,7 +2183,7 @@ var segCount = 5;
 var segMag = 75;
 
 var chains = [new _chain2.default(segCount, segMag, new _victor2.default(0, 200)), new _chain2.default(segCount, segMag, new _victor2.default(0, 250)), new _chain2.default(segCount, segMag, new _victor2.default(0, 300)), new _chain2.default(segCount, segMag, new _victor2.default(0, 350)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 200)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 250)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 300)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 350))];
-var gravityItems = [new _gravity_item2.default(new _victor2.default(100, 100)), new _gravity_item2.default(new _victor2.default(500, 500))];
+var gravityItems = [];
 var canvas = document.getElementById('canvas');
 var context;
 var currentMousePos = {
