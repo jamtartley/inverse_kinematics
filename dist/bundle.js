@@ -2432,42 +2432,31 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var GravityItem = function () {
-    function GravityItem(position) {
-        _classCallCheck(this, GravityItem);
+var Ball = function () {
+    function Ball(position) {
+        _classCallCheck(this, Ball);
 
         this.position = position;
-        this.velocity = new _victor2.default(Utils.getRandIntBetween(-8, 8), Utils.getRandIntBetween(-8, 8));
-        this.radius = 10;
-        this.diameter = this.radius * 2;
+        this.velocity = new _victor2.default(0, 0);
+        this.inverseMass = Math.random();
+
+        var minRadius = 10;
+        var maxRadius = 30;
+
+        this.radius = maxRadius - this.inverseMass * (maxRadius - minRadius);
     }
 
-    _createClass(GravityItem, [{
-        key: 'fixOutOfBounds',
-        value: function fixOutOfBounds() {
-            if (this.position.x - this.radius < 0) {
-                this.position.x = this.radius;
-                this.velocity.x *= -1;
-            }
-            if (this.position.x + this.radius > window.innerWidth) {
-                this.position.x = window.innerWidth - this.radius;
-                this.velocity.x *= -1;
-            }
-
-            if (this.position.y - this.radius < 0) {
-                this.position.y = this.radius;
-                this.velocity.y *= -1;
-            }
-            if (this.position.y + this.radius > window.innerHeight) {
-                this.position.y = window.innerHeight - this.radius;
-                this.velocity.y *= -1;
-            }
-        }
-    }, {
+    _createClass(Ball, [{
         key: 'update',
         value: function update() {
-            this.fixOutOfBounds();
+            var gravity = 2;
+            this.velocity.y += gravity;
             this.position.add(this.velocity);
+
+            if (this.position.y + this.radius > window.innerHeight) {
+                this.position.y = window.innerHeight - this.radius;
+                this.velocity.y *= -this.inverseMass;
+            }
         }
     }, {
         key: 'draw',
@@ -2479,10 +2468,10 @@ var GravityItem = function () {
         }
     }]);
 
-    return GravityItem;
+    return Ball;
 }();
 
-exports.default = GravityItem;
+exports.default = Ball;
 
 /***/ })
 /******/ ]);
