@@ -1403,8 +1403,11 @@ function degrees2radian (deg) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+exports.getRandIntBetween = getRandIntBetween;
+exports.getEuclideanDistance = getEuclideanDistance;
+exports.getEuclideanDistanceSquared = getEuclideanDistanceSquared;
+exports.toRadians = toRadians;
+exports.getPointOnCircle = getPointOnCircle;
 
 var _victor = __webpack_require__(0);
 
@@ -1412,63 +1415,27 @@ var _victor2 = _interopRequireDefault(_victor);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function getRandIntBetween(min, max) {
+    return Math.floor(Math.random() * (max - min)) + min;
+}
 
-var Segment = function () {
-    function Segment(a, magnitude, thickness) {
-        _classCallCheck(this, Segment);
+function getEuclideanDistance(a, b) {
+    return Math.sqrt(getEuclideanDistanceSquared(a, b));
+}
 
-        this.a = a;
-        this.magnitude = magnitude;
-        this.angle = 0;
-        this.b = this.getB();
-        this.thickness = thickness;
-    }
+function getEuclideanDistanceSquared(a, b) {
+    var dx = a.x - b.x;
+    var dy = a.y - b.y;
+    return dx * dx + dy * dy;
+}
 
-    _createClass(Segment, [{
-        key: "anchorTo",
-        value: function anchorTo(x, y) {
-            this.a = new _victor2.default(x, y);
-            this.b = this.getB();
-        }
-    }, {
-        key: "getB",
-        value: function getB() {
-            var dx = this.magnitude * Math.cos(this.angle);
-            var dy = this.magnitude * Math.sin(this.angle);
-            return new _victor2.default(this.a.x + dx, this.a.y + dy);
-        }
-    }, {
-        key: "moveTowards",
-        value: function moveTowards(x, y) {
-            var target = new _victor2.default(x, y);
-            var dir = new _victor2.default(target.x - this.a.x, target.y - this.a.y);
+function toRadians(degrees) {
+    return degrees * (Math.PI / 180);
+}
 
-            this.angle = Math.atan2(dir.y, dir.x);
-            dir.x = dir.x * this.magnitude / dir.magnitude();
-            dir.y = dir.y * this.magnitude / dir.magnitude();
-
-            dir.multiply(new _victor2.default(-1, -1));
-            this.a.x = target.x + dir.x;
-            this.a.y = target.y + dir.y;
-            this.b = this.getB();
-        }
-    }, {
-        key: "draw",
-        value: function draw(context) {
-            context.beginPath();
-            context.moveTo(this.a.x, this.a.y);
-            context.lineTo(this.b.x, this.b.y);
-            context.strokeStyle = "rgb(10, 10, 10)";
-            context.lineWidth = this.thickness;
-            context.stroke();
-        }
-    }]);
-
-    return Segment;
-}();
-
-exports.default = Segment;
+function getPointOnCircle(centre, radius, angle) {
+    return new _victor2.default(centre.x + radius * Math.cos(toRadians(angle)), centre.y + radius * Math.sin(toRadians(angle)));
+}
 
 /***/ }),
 /* 2 */
@@ -2088,7 +2055,7 @@ __webpack_require__(9);
 "use strict";
 
 
-var _utils = __webpack_require__(12);
+var _utils = __webpack_require__(1);
 
 var Utils = _interopRequireWildcard(_utils);
 
@@ -2096,11 +2063,11 @@ var _victor = __webpack_require__(0);
 
 var _victor2 = _interopRequireDefault(_victor);
 
-var _gravity_item = __webpack_require__(10);
+var _ball = __webpack_require__(13);
 
-var _gravity_item2 = _interopRequireDefault(_gravity_item);
+var _ball2 = _interopRequireDefault(_ball);
 
-var _spider = __webpack_require__(13);
+var _spider = __webpack_require__(10);
 
 var _spider2 = _interopRequireDefault(_spider);
 
@@ -2126,7 +2093,7 @@ function mouseMove(e) {
 }
 
 function mouseDown(e) {
-    spawnGravityItem(e.x, e.y);
+    spawnBall(e.x, e.y);
 }
 
 function resize() {
@@ -2138,14 +2105,14 @@ function update() {
     context.clearRect(0, 0, window.innerWidth, window.innerHeight);
     resize();
 
-    var grabbableItems = gravityItems.length === 0 ? [currentMousePos] : [];
+    var grabbableItems = balls.length === 0 ? [currentMousePos] : [];
 
-    for (var i = 0; i < gravityItems.length; i++) {
-        var gravityItem = gravityItems[i];
+    for (var i = 0; i < balls.length; i++) {
+        var ball = balls[i];
 
-        grabbableItems.push(gravityItem.position);
-        gravityItem.update();
-        gravityItem.draw(context);
+        grabbableItems.push(ball.position);
+        ball.update();
+        ball.draw(context);
     }
 
     for (var _i = 0; _i < spiders.length; _i++) {
@@ -2155,15 +2122,15 @@ function update() {
     }
 }
 
-function spawnGravityItem(x, y) {
-    gravityItems.push(new _gravity_item2.default(new _victor2.default(x, y)));
+function spawnBall(x, y) {
+    balls.push(new _ball2.default(new _victor2.default(x, y)));
 }
 
 var segCount = 5;
 var segMag = 75;
 
 var spiders = [new _spider2.default(new _victor2.default(window.innerWidth / 2, window.innerHeight / 2))];
-var gravityItems = [];
+var balls = [];
 var canvas = document.getElementById('canvas');
 var context;
 var currentMousePos = new _victor2.default(0, 0);
@@ -2185,13 +2152,13 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _utils = __webpack_require__(12);
+var _utils = __webpack_require__(1);
 
 var Utils = _interopRequireWildcard(_utils);
 
-var _victor = __webpack_require__(0);
+var _chain = __webpack_require__(11);
 
-var _victor2 = _interopRequireDefault(_victor);
+var _chain2 = _interopRequireDefault(_chain);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2199,57 +2166,66 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var GravityItem = function () {
-    function GravityItem(position) {
-        _classCallCheck(this, GravityItem);
+var Spider = function () {
+    function Spider(centre) {
+        _classCallCheck(this, Spider);
 
-        this.position = position;
-        this.velocity = new _victor2.default(Utils.getRandIntBetween(-8, 8), Utils.getRandIntBetween(-8, 8));
-        this.radius = 10;
-        this.diameter = this.radius * 2;
+        this.centre = centre;
+        this.legs = [];
+        this.radius = 30;
+
+        var legCount = 8;
+        var legSpread = 360;
+        var betweenLeg = legSpread / legCount;
+
+        for (var i = 0; i < legCount; i++) {
+            var position = Utils.getPointOnCircle(centre, this.radius, i * betweenLeg);
+            this.legs.push(new _chain2.default(5, 75, position));
+        }
     }
 
-    _createClass(GravityItem, [{
-        key: 'fixOutOfBounds',
-        value: function fixOutOfBounds() {
-            if (this.position.x - this.radius < 0) {
-                this.position.x = this.radius;
-                this.velocity.x *= -1;
-            }
-            if (this.position.x + this.radius > window.innerWidth) {
-                this.position.x = window.innerWidth - this.radius;
-                this.velocity.x *= -1;
-            }
-
-            if (this.position.y - this.radius < 0) {
-                this.position.y = this.radius;
-                this.velocity.y *= -1;
-            }
-            if (this.position.y + this.radius > window.innerHeight) {
-                this.position.y = window.innerHeight - this.radius;
-                this.velocity.y *= -1;
-            }
-        }
-    }, {
+    _createClass(Spider, [{
         key: 'update',
-        value: function update() {
-            this.fixOutOfBounds();
-            this.position.add(this.velocity);
+        value: function update(grabbableItems) {
+            var _this = this;
+
+            var _loop = function _loop(i) {
+                var leg = _this.legs[i];
+
+                var closestItem = grabbableItems.reduce(function (a, b) {
+                    var distA = Utils.getEuclideanDistanceSquared(a, leg.getEndVector());
+                    var distB = Utils.getEuclideanDistanceSquared(b, leg.getEndVector());
+                    return distA < distB ? a : b;
+                });
+
+                leg.moveTowards(closestItem.x, closestItem.y);
+            };
+
+            for (var i = 0; i < this.legs.length; i++) {
+                _loop(i);
+            }
         }
     }, {
         key: 'draw',
         value: function draw(context) {
+            for (var i = 0; i < this.legs.length; i++) {
+                this.legs[i].draw(context);
+            }
+
+            // Slightly larger to cover legs
+            var bodyMaskSize = this.radius * 1.5;
+
             context.beginPath();
-            context.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
-            context.fillStyle = "black";
+            context.arc(this.centre.x, this.centre.y, bodyMaskSize, 0, Math.PI * 2, false);
+            context.fillStyle = "rgb(10, 10, 10)";
             context.fill();
         }
     }]);
 
-    return GravityItem;
+    return Spider;
 }();
 
-exports.default = GravityItem;
+exports.default = Spider;
 
 /***/ }),
 /* 11 */
@@ -2268,7 +2244,7 @@ var _victor = __webpack_require__(0);
 
 var _victor2 = _interopRequireDefault(_victor);
 
-var _segment = __webpack_require__(1);
+var _segment = __webpack_require__(12);
 
 var _segment2 = _interopRequireDefault(_segment);
 
@@ -2362,11 +2338,8 @@ exports.default = Chain;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.getRandIntBetween = getRandIntBetween;
-exports.getEuclideanDistance = getEuclideanDistance;
-exports.getEuclideanDistanceSquared = getEuclideanDistanceSquared;
-exports.toRadians = toRadians;
-exports.getPointOnCircle = getPointOnCircle;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _victor = __webpack_require__(0);
 
@@ -2374,27 +2347,63 @@ var _victor2 = _interopRequireDefault(_victor);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function getRandIntBetween(min, max) {
-    return Math.floor(Math.random() * (max - min)) + min;
-}
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function getEuclideanDistance(a, b) {
-    return Math.sqrt(getEuclideanDistanceSquared(a, b));
-}
+var Segment = function () {
+    function Segment(a, magnitude, thickness) {
+        _classCallCheck(this, Segment);
 
-function getEuclideanDistanceSquared(a, b) {
-    var dx = a.x - b.x;
-    var dy = a.y - b.y;
-    return dx * dx + dy * dy;
-}
+        this.a = a;
+        this.magnitude = magnitude;
+        this.angle = 0;
+        this.b = this.getB();
+        this.thickness = thickness;
+    }
 
-function toRadians(degrees) {
-    return degrees * (Math.PI / 180);
-}
+    _createClass(Segment, [{
+        key: "anchorTo",
+        value: function anchorTo(x, y) {
+            this.a = new _victor2.default(x, y);
+            this.b = this.getB();
+        }
+    }, {
+        key: "getB",
+        value: function getB() {
+            var dx = this.magnitude * Math.cos(this.angle);
+            var dy = this.magnitude * Math.sin(this.angle);
+            return new _victor2.default(this.a.x + dx, this.a.y + dy);
+        }
+    }, {
+        key: "moveTowards",
+        value: function moveTowards(x, y) {
+            var target = new _victor2.default(x, y);
+            var dir = new _victor2.default(target.x - this.a.x, target.y - this.a.y);
 
-function getPointOnCircle(centre, radius, angle) {
-    return new _victor2.default(centre.x + radius * Math.cos(toRadians(angle)), centre.y + radius * Math.sin(toRadians(angle)));
-}
+            this.angle = Math.atan2(dir.y, dir.x);
+            dir.x = dir.x * this.magnitude / dir.magnitude();
+            dir.y = dir.y * this.magnitude / dir.magnitude();
+
+            dir.multiply(new _victor2.default(-1, -1));
+            this.a.x = target.x + dir.x;
+            this.a.y = target.y + dir.y;
+            this.b = this.getB();
+        }
+    }, {
+        key: "draw",
+        value: function draw(context) {
+            context.beginPath();
+            context.moveTo(this.a.x, this.a.y);
+            context.lineTo(this.b.x, this.b.y);
+            context.strokeStyle = "rgb(10, 10, 10)";
+            context.lineWidth = this.thickness;
+            context.stroke();
+        }
+    }]);
+
+    return Segment;
+}();
+
+exports.default = Segment;
 
 /***/ }),
 /* 13 */
@@ -2409,13 +2418,13 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _utils = __webpack_require__(12);
+var _utils = __webpack_require__(1);
 
 var Utils = _interopRequireWildcard(_utils);
 
-var _chain = __webpack_require__(11);
+var _victor = __webpack_require__(0);
 
-var _chain2 = _interopRequireDefault(_chain);
+var _victor2 = _interopRequireDefault(_victor);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2423,66 +2432,57 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Spider = function () {
-    function Spider(centre) {
-        _classCallCheck(this, Spider);
+var GravityItem = function () {
+    function GravityItem(position) {
+        _classCallCheck(this, GravityItem);
 
-        this.centre = centre;
-        this.legs = [];
-        this.radius = 30;
-
-        var legCount = 8;
-        var legSpread = 360;
-        var betweenLeg = legSpread / legCount;
-
-        for (var i = 0; i < legCount; i++) {
-            var position = Utils.getPointOnCircle(centre, this.radius, i * betweenLeg);
-            this.legs.push(new _chain2.default(5, 75, position));
-        }
+        this.position = position;
+        this.velocity = new _victor2.default(Utils.getRandIntBetween(-8, 8), Utils.getRandIntBetween(-8, 8));
+        this.radius = 10;
+        this.diameter = this.radius * 2;
     }
 
-    _createClass(Spider, [{
-        key: 'update',
-        value: function update(grabbableItems) {
-            var _this = this;
-
-            var _loop = function _loop(i) {
-                var leg = _this.legs[i];
-
-                var closestItem = grabbableItems.reduce(function (a, b) {
-                    var distA = Utils.getEuclideanDistanceSquared(a, leg.getEndVector());
-                    var distB = Utils.getEuclideanDistanceSquared(b, leg.getEndVector());
-                    return distA < distB ? a : b;
-                });
-
-                leg.moveTowards(closestItem.x, closestItem.y);
-            };
-
-            for (var i = 0; i < this.legs.length; i++) {
-                _loop(i);
+    _createClass(GravityItem, [{
+        key: 'fixOutOfBounds',
+        value: function fixOutOfBounds() {
+            if (this.position.x - this.radius < 0) {
+                this.position.x = this.radius;
+                this.velocity.x *= -1;
             }
+            if (this.position.x + this.radius > window.innerWidth) {
+                this.position.x = window.innerWidth - this.radius;
+                this.velocity.x *= -1;
+            }
+
+            if (this.position.y - this.radius < 0) {
+                this.position.y = this.radius;
+                this.velocity.y *= -1;
+            }
+            if (this.position.y + this.radius > window.innerHeight) {
+                this.position.y = window.innerHeight - this.radius;
+                this.velocity.y *= -1;
+            }
+        }
+    }, {
+        key: 'update',
+        value: function update() {
+            this.fixOutOfBounds();
+            this.position.add(this.velocity);
         }
     }, {
         key: 'draw',
         value: function draw(context) {
-            for (var i = 0; i < this.legs.length; i++) {
-                this.legs[i].draw(context);
-            }
-
-            // Slightly larger to cover legs
-            var bodyMaskSize = this.radius * 1.5;
-
             context.beginPath();
-            context.arc(this.centre.x, this.centre.y, bodyMaskSize, 0, Math.PI * 2, false);
-            context.fillStyle = "rgb(10, 10, 10)";
+            context.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
+            context.fillStyle = "black";
             context.fill();
         }
     }]);
 
-    return Spider;
+    return GravityItem;
 }();
 
-exports.default = Spider;
+exports.default = GravityItem;
 
 /***/ })
 /******/ ]);

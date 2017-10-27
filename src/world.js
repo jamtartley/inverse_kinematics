@@ -1,6 +1,6 @@
 import * as Utils from './utils';
 import Victor from 'victor';
-import GravityItem from './gravity_item';
+import Ball from './ball';
 import Spider from './spider';
 
 function init() {
@@ -21,7 +21,7 @@ function mouseMove(e) {
 }
 
 function mouseDown(e) {
-    spawnGravityItem(e.x, e.y);
+    spawnBall(e.x, e.y);
 }
 
 function resize() {
@@ -33,14 +33,14 @@ function update() {
     context.clearRect(0, 0, window.innerWidth, window.innerHeight);
     resize();
 
-    let grabbableItems = gravityItems.length === 0 ? [currentMousePos] : [];
+    let grabbableItems = balls.length === 0 ? [currentMousePos] : [];
 
-    for (let i = 0; i < gravityItems.length; i++) {
-        let gravityItem = gravityItems[i];
+    for (let i = 0; i < balls.length; i++) {
+        let ball = balls[i];
     
-        grabbableItems.push(gravityItem.position);
-        gravityItem.update();
-        gravityItem.draw(context);
+        grabbableItems.push(ball.position);
+        ball.update();
+        ball.draw(context);
     }
 
     for (let i = 0; i < spiders.length; i++) {
@@ -50,8 +50,8 @@ function update() {
     }
 }
 
-function spawnGravityItem(x, y) {
-    gravityItems.push(new GravityItem(new Victor(x, y)));
+function spawnBall(x, y) {
+    balls.push(new Ball(new Victor(x, y)));
 }
 
 const segCount = 5;
@@ -60,7 +60,7 @@ const segMag = 75;
 var spiders = [
     new Spider(new Victor(window.innerWidth / 2, window.innerHeight / 2)),
 ]
-var gravityItems = [
+var balls = [
 ];
 var canvas = document.getElementById('canvas');
 var context;
