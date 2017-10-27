@@ -2,12 +2,19 @@ import * as Utils from './utils';
 import Chain from './chain';
 
 class Spider {
-    constructor(position) {
-        this.position = position;
+    constructor(centre) {
+        this.centre = centre;
         this.legs = [];
+        this.radius = 30;
 
-        for (let i = 0; i < 4; i++) {
-            this.legs.push(new Chain(5, 75, this.position));    
+        const legCount = 4;
+        const legSpread = 150;
+        const betweenLeg = legSpread / legCount;
+        const minLegAngle = -legSpread / 2;
+
+        for (let i = 0; i < legCount; i++) {
+            let position = Utils.getPointOnCircle(centre, this.radius, minLegAngle + i * betweenLeg); 
+            this.legs.push(new Chain(5, 75, position));    
         }
     }
 
@@ -30,10 +37,11 @@ class Spider {
             this.legs[i].draw(context);
         }
 
-        const radius = 30;
+        // Slightly larger to cover legs
+        const bodyMaskSize = this.radius * 1.5;
 
         context.beginPath();
-        context.arc(this.position.x, this.position.y, radius, 0,  Math.PI * 2, false);
+        context.arc(this.centre.x, this.centre.y, bodyMaskSize, 0,  Math.PI * 2, false);
         context.fillStyle = "rgb(10, 10, 10)";
         context.fill();
     }

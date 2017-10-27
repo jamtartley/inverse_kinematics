@@ -1,8 +1,7 @@
 import * as Utils from './utils';
 import Victor from 'victor';
 import GravityItem from './gravity_item';
-import Chain from './chain';
-import Segment from './segment';
+import Spider from './spider';
 
 function init() {
     const frameRate = 60;
@@ -34,29 +33,20 @@ function update() {
     context.clearRect(0, 0, window.innerWidth, window.innerHeight);
     resize();
 
-    for (let i = 0; i < chains.length; i++) {
-        let chain = chains[i];
-        let closest = currentMousePos;
-
-        if (gravityItems.length !== 0) {
-            let closestItem = gravityItems.reduce(function(a, b) {
-                let distA = Utils.getEuclideanDistance(a.position, chain.getEndVector());
-                let distB = Utils.getEuclideanDistance(b.position, chain.getEndVector());
-                return distA < distB ? a : b;
-            });
-
-            closest = closestItem.position;
-        }
-
-        chain.moveTowards(closest.x, closest.y);
-        chain.draw(context);
-    }
+    let grabbableItems = gravityItems.length === 0 ? [currentMousePos] : [];
 
     for (let i = 0; i < gravityItems.length; i++) {
         let gravityItem = gravityItems[i];
     
+        grabbableItems.push(gravityItem.position);
         gravityItem.update();
         gravityItem.draw(context);
+    }
+
+    for (let i = 0; i < spiders.length; i++) {
+        let spider = spiders[i];
+        spider.update(grabbableItems);
+        spider.draw(context);
     }
 }
 
@@ -64,24 +54,14 @@ function spawnGravityItem(x, y) {
     gravityItems.push(new GravityItem(new Victor(x, y)));
 }
 
-function getChains() {
-}
-
 const segCount = 5;
 const segMag = 75;
 
-var chains = [
-    new Chain(segCount, segMag, new Victor(0, 200)),
-    new Chain(segCount, segMag, new Victor(0, 250)),
-    new Chain(segCount, segMag, new Victor(0, 300)),
-    new Chain(segCount, segMag, new Victor(0, 350)),
-    new Chain(segCount, segMag, new Victor(window.innerWidth, 200)),
-    new Chain(segCount, segMag, new Victor(window.innerWidth, 250)),
-    new Chain(segCount, segMag, new Victor(window.innerWidth, 300)),
-    new Chain(segCount, segMag, new Victor(window.innerWidth, 350)),
-];
+var spiders = [
+    new Spider(new Victor(0, window.innerHeight / 2)),
+    new Spider(new Victor(window.innerWidth, window.innerHeight / 2)),
+]
 var gravityItems = [
-    new GravityItem(new Victor(20, 20))
 ];
 var canvas = document.getElementById('canvas');
 var context;

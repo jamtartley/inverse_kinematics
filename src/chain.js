@@ -7,7 +7,7 @@ class Chain {
         this.anchor = anchor;
         this.segments = [];
 
-        const maxThickness = 20;
+        const maxThickness = 10;
 
         for (var i = 0; i < length; i++) {
             let parent = this.segments[i - 1];

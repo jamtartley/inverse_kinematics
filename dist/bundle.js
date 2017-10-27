@@ -2100,13 +2100,9 @@ var _gravity_item = __webpack_require__(10);
 
 var _gravity_item2 = _interopRequireDefault(_gravity_item);
 
-var _chain = __webpack_require__(11);
+var _spider = __webpack_require__(13);
 
-var _chain2 = _interopRequireDefault(_chain);
-
-var _segment = __webpack_require__(1);
-
-var _segment2 = _interopRequireDefault(_segment);
+var _spider2 = _interopRequireDefault(_spider);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2142,33 +2138,20 @@ function update() {
     context.clearRect(0, 0, window.innerWidth, window.innerHeight);
     resize();
 
-    var _loop = function _loop(i) {
-        var chain = chains[i];
-        var closest = currentMousePos;
-
-        if (gravityItems.length !== 0) {
-            var closestItem = gravityItems.reduce(function (a, b) {
-                var distA = Utils.getEuclideanDistance(a.position, chain.getEndVector());
-                var distB = Utils.getEuclideanDistance(b.position, chain.getEndVector());
-                return distA < distB ? a : b;
-            });
-
-            closest = closestItem.position;
-        }
-
-        chain.moveTowards(closest.x, closest.y);
-        chain.draw(context);
-    };
-
-    for (var i = 0; i < chains.length; i++) {
-        _loop(i);
-    }
+    var grabbableItems = gravityItems.length === 0 ? [currentMousePos] : [];
 
     for (var i = 0; i < gravityItems.length; i++) {
         var gravityItem = gravityItems[i];
 
+        grabbableItems.push(gravityItem.position);
         gravityItem.update();
         gravityItem.draw(context);
+    }
+
+    for (var _i = 0; _i < spiders.length; _i++) {
+        var spider = spiders[_i];
+        spider.update(grabbableItems);
+        spider.draw(context);
     }
 }
 
@@ -2176,13 +2159,11 @@ function spawnGravityItem(x, y) {
     gravityItems.push(new _gravity_item2.default(new _victor2.default(x, y)));
 }
 
-function getChains() {}
-
 var segCount = 5;
 var segMag = 75;
 
-var chains = [new _chain2.default(segCount, segMag, new _victor2.default(0, 200)), new _chain2.default(segCount, segMag, new _victor2.default(0, 250)), new _chain2.default(segCount, segMag, new _victor2.default(0, 300)), new _chain2.default(segCount, segMag, new _victor2.default(0, 350)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 200)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 250)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 300)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 350))];
-var gravityItems = [new _gravity_item2.default(new _victor2.default(20, 20))];
+var spiders = [new _spider2.default(new _victor2.default(0, window.innerHeight / 2)), new _spider2.default(new _victor2.default(window.innerWidth, window.innerHeight / 2))];
+var gravityItems = [];
 var canvas = document.getElementById('canvas');
 var context;
 var currentMousePos = new _victor2.default(0, 0);
@@ -2303,7 +2284,7 @@ var Chain = function () {
         this.anchor = anchor;
         this.segments = [];
 
-        var maxThickness = 20;
+        var maxThickness = 10;
 
         for (var i = 0; i < length; i++) {
             var parent = this.segments[i - 1];
@@ -2383,6 +2364,15 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.getRandIntBetween = getRandIntBetween;
 exports.getEuclideanDistance = getEuclideanDistance;
+exports.toRadians = toRadians;
+exports.getPointOnCircle = getPointOnCircle;
+
+var _victor = __webpack_require__(0);
+
+var _victor2 = _interopRequireDefault(_victor);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function getRandIntBetween(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 }
@@ -2392,6 +2382,103 @@ function getEuclideanDistance(a, b) {
     var dy = a.y - b.y;
     return Math.sqrt(dx * dx + dy * dy);
 }
+
+function toRadians(degrees) {
+    return degrees * (Math.PI / 180);
+}
+
+function getPointOnCircle(centre, radius, angle) {
+    return new _victor2.default(centre.x + radius * Math.cos(toRadians(angle)), centre.y + radius * Math.sin(toRadians(angle)));
+}
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _utils = __webpack_require__(12);
+
+var Utils = _interopRequireWildcard(_utils);
+
+var _chain = __webpack_require__(11);
+
+var _chain2 = _interopRequireDefault(_chain);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Spider = function () {
+    function Spider(centre) {
+        _classCallCheck(this, Spider);
+
+        this.centre = centre;
+        this.legs = [];
+        this.radius = 30;
+
+        var legCount = 4;
+        var legSpread = 150;
+        var betweenLeg = legSpread / legCount;
+        var minLegAngle = -legSpread / 2;
+
+        for (var i = 0; i < legCount; i++) {
+            var position = Utils.getPointOnCircle(centre, this.radius, minLegAngle + i * betweenLeg);
+            this.legs.push(new _chain2.default(5, 75, position));
+        }
+    }
+
+    _createClass(Spider, [{
+        key: 'update',
+        value: function update(grabbableItems) {
+            var _this = this;
+
+            var _loop = function _loop(i) {
+                var leg = _this.legs[i];
+
+                var closestItem = grabbableItems.reduce(function (a, b) {
+                    var distA = Utils.getEuclideanDistance(a, leg.getEndVector());
+                    var distB = Utils.getEuclideanDistance(b, leg.getEndVector());
+                    return distA < distB ? a : b;
+                });
+
+                leg.moveTowards(closestItem.x, closestItem.y);
+            };
+
+            for (var i = 0; i < this.legs.length; i++) {
+                _loop(i);
+            }
+        }
+    }, {
+        key: 'draw',
+        value: function draw(context) {
+            for (var i = 0; i < this.legs.length; i++) {
+                this.legs[i].draw(context);
+            }
+
+            // Slightly larger to cover legs
+            var bodyMaskSize = this.radius * 1.5;
+
+            context.beginPath();
+            context.arc(this.centre.x, this.centre.y, bodyMaskSize, 0, Math.PI * 2, false);
+            context.fillStyle = "rgb(10, 10, 10)";
+            context.fill();
+        }
+    }]);
+
+    return Spider;
+}();
+
+exports.default = Spider;
 
 /***/ })
 /******/ ]);
