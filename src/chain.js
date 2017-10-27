@@ -2,11 +2,10 @@ import Victor from 'victor';
 import Segment from './segment';
 
 class Chain {
-    constructor(length) {
+    constructor(length, segMag) {
         this.length = length;
         this.segments = [];
 
-        const magnitude = 100;
         const maxThickness = 10;
 
         for (var i = 0; i < length; i++) {
@@ -14,7 +13,7 @@ class Chain {
             let parentPos = parent === undefined ? new Victor(300, 300) : parent.b.clone();
             let thickness = maxThickness * (1 - i / length);
 
-            this.segments.push(new Segment(parentPos, magnitude, thickness));
+            this.segments.push(new Segment(parentPos, segMag, thickness));
         }
     }
 

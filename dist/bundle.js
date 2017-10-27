@@ -2128,7 +2128,7 @@ function update() {
 }
 
 var canvas = document.getElementById('canvas');
-var chain = new _chain2.default(5);
+var chain = new _chain2.default(20, 20);
 var context;
 var currentMousePos = {
     x: 0,
@@ -2165,13 +2165,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Chain = function () {
-    function Chain(length) {
+    function Chain(length, segMag) {
         _classCallCheck(this, Chain);
 
         this.length = length;
         this.segments = [];
 
-        var magnitude = 100;
         var maxThickness = 10;
 
         for (var i = 0; i < length; i++) {
@@ -2179,7 +2178,7 @@ var Chain = function () {
             var parentPos = parent === undefined ? new _victor2.default(300, 300) : parent.b.clone();
             var thickness = maxThickness * (1 - i / length);
 
-            this.segments.push(new _segment2.default(parentPos, magnitude, thickness));
+            this.segments.push(new _segment2.default(parentPos, segMag, thickness));
         }
     }
 

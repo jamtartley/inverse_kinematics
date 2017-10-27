@@ -31,7 +31,7 @@ function update() {
 }
 
 var canvas = document.getElementById('canvas');
-var chain = new Chain(5);
+var chain = new Chain(20, 20);
 var context;
 var currentMousePos = {
     x: 0,
