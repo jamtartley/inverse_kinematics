@@ -9,6 +9,11 @@ class Segment {
         this.thickness = thickness;
     }
 
+    anchorTo(x, y) {
+        this.a = new Victor(x, y);
+        this.b = this.getB();
+    }
+
     getB() {
         let dx = this.magnitude * Math.cos(this.angle); 
         let dy = this.magnitude * Math.sin(this.angle);

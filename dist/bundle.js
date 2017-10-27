@@ -1426,6 +1426,12 @@ var Segment = function () {
     }
 
     _createClass(Segment, [{
+        key: "anchorTo",
+        value: function anchorTo(x, y) {
+            this.a = new _victor2.default(x, y);
+            this.b = this.getB();
+        }
+    }, {
         key: "getB",
         value: function getB() {
             var dx = this.magnitude * Math.cos(this.angle);
@@ -2194,6 +2200,21 @@ var Chain = function () {
                 var target = child === undefined ? new _victor2.default(x, y) : child.a.clone();
 
                 segment.moveTowards(target.x, target.y);
+            }
+
+            this.anchorChainTo(window.innerWidth / 2, window.innerHeight);
+        }
+    }, {
+        key: 'anchorChainTo',
+        value: function anchorChainTo(x, y) {
+            var base = new _victor2.default(x, y);
+
+            for (var i = 0; i < this.segments.length; i++) {
+                var segment = this.segments[i];
+                var parent = this.segments[i - 1];
+                var parentPos = parent === undefined ? base : parent.b.clone();
+
+                segment.anchorTo(parentPos.x, parentPos.y);
             }
         }
     }, {

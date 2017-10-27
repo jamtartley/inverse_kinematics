@@ -33,6 +33,20 @@ class Chain {
 
             segment.moveTowards(target.x, target.y);
         }
+
+        this.anchorChainTo(window.innerWidth / 2, window.innerHeight);
+    }
+
+    anchorChainTo(x, y) {
+        let base = new Victor(x, y);
+
+        for (var i = 0; i < this.segments.length; i++) {
+            let segment = this.segments[i];
+            let parent = this.segments[i - 1];
+            let parentPos = parent === undefined ? base : parent.b.clone();
+
+            segment.anchorTo(parentPos.x, parentPos.y);
+        }
     }
 
     draw(context) {
