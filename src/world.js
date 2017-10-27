@@ -35,18 +35,19 @@ function update() {
 
     for (let i = 0; i < chains.length; i++) {
         let chain = chains[i];
+        let closest = currentMousePos;
 
-        if (gravityItems.length === 0) {
-            continue;
+        if (gravityItems.length !== 0) {
+            let closestItem = gravityItems.reduce(function(a, b) {
+                let distA = getEuclideanDistance(a.position, chain.getEndVector());
+                let distB = getEuclideanDistance(b.position, chain.getEndVector());
+                return distA < distB ? a : b;
+            });
+
+            closest = closestItem.position;
         }
 
-        let closest = gravityItems.reduce(function(a, b) {
-            let distA = getEuclideanDistance(a.position, chain.getEndVector());
-            let distB = getEuclideanDistance(b.position, chain.getEndVector());
-            return distA < distB ? a : b;
-        });
-
-        chain.moveTowards(closest.position.x, closest.position.y);
+        chain.moveTowards(closest.x, closest.y);
         chain.draw(context);
     }
 
@@ -88,10 +89,7 @@ var gravityItems = [
 ];
 var canvas = document.getElementById('canvas');
 var context;
-var currentMousePos = {
-    x: 0,
-    y: 0
-};
+var currentMousePos = new Victor(0, 0);
 
 if (canvas && canvas.getContext) {
     init();

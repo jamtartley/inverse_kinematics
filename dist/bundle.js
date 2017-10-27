@@ -2138,25 +2138,24 @@ function update() {
 
     var _loop = function _loop(i) {
         var chain = chains[i];
+        var closest = currentMousePos;
 
-        if (gravityItems.length === 0) {
-            return 'continue';
+        if (gravityItems.length !== 0) {
+            var closestItem = gravityItems.reduce(function (a, b) {
+                var distA = getEuclideanDistance(a.position, chain.getEndVector());
+                var distB = getEuclideanDistance(b.position, chain.getEndVector());
+                return distA < distB ? a : b;
+            });
+
+            closest = closestItem.position;
         }
 
-        var closest = gravityItems.reduce(function (a, b) {
-            var distA = getEuclideanDistance(a.position, chain.getEndVector());
-            var distB = getEuclideanDistance(b.position, chain.getEndVector());
-            return distA < distB ? a : b;
-        });
-
-        chain.moveTowards(closest.position.x, closest.position.y);
+        chain.moveTowards(closest.x, closest.y);
         chain.draw(context);
     };
 
     for (var i = 0; i < chains.length; i++) {
-        var _ret = _loop(i);
-
-        if (_ret === 'continue') continue;
+        _loop(i);
     }
 
     for (var i = 0; i < gravityItems.length; i++) {
@@ -2186,10 +2185,7 @@ var chains = [new _chain2.default(segCount, segMag, new _victor2.default(0, 200)
 var gravityItems = [];
 var canvas = document.getElementById('canvas');
 var context;
-var currentMousePos = {
-    x: 0,
-    y: 0
-};
+var currentMousePos = new _victor2.default(0, 0);
 
 if (canvas && canvas.getContext) {
     init();
