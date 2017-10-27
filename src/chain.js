@@ -2,11 +2,12 @@ import Victor from 'victor';
 import Segment from './segment';
 
 class Chain {
-    constructor(length, segMag) {
+    constructor(length, segMag, anchor) {
         this.length = length;
+        this.anchor = anchor;
         this.segments = [];
 
-        const maxThickness = 10;
+        const maxThickness = 20;
 
         for (var i = 0; i < length; i++) {
             let parent = this.segments[i - 1];
@@ -33,7 +34,9 @@ class Chain {
             segment.moveTowards(target.x, target.y);
         }
 
-        this.anchorChainTo(window.innerWidth / 2, window.innerHeight);
+        if (this.anchor !== undefined) {
+            this.anchorChainTo(this.anchor.x, this.anchor.y);
+        }
     }
 
     anchorChainTo(x, y) {
