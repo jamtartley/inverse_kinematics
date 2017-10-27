@@ -25,8 +25,6 @@ function resize() {
 function update() {
     context.clearRect(0, 0, window.innerWidth, window.innerHeight);
     resize();
-    context.fillStyle = "rgb(50, 50, 50)";
-    context.fillRect(0, 0, canvas.width, canvas.height);
 
     chain.moveTowards(currentMousePos.x, currentMousePos.y);
     chain.draw(context);
