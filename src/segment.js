@@ -38,7 +38,7 @@ class Segment {
         context.beginPath();
         context.moveTo(this.a.x, this.a.y);
         context.lineTo(this.b.x, this.b.y);
-        context.strokeStyle = "white";
+        context.strokeStyle = "rgb(10, 10, 10)";
         context.lineWidth = this.thickness;
         context.stroke();
     }

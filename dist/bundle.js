@@ -1459,7 +1459,7 @@ var Segment = function () {
             context.beginPath();
             context.moveTo(this.a.x, this.a.y);
             context.lineTo(this.b.x, this.b.y);
-            context.strokeStyle = "white";
+            context.strokeStyle = "rgb(10, 10, 10)";
             context.lineWidth = this.thickness;
             context.stroke();
         }
@@ -2088,6 +2088,10 @@ __webpack_require__(9);
 "use strict";
 
 
+var _victor = __webpack_require__(0);
+
+var _victor2 = _interopRequireDefault(_victor);
+
 var _chain = __webpack_require__(10);
 
 var _chain2 = _interopRequireDefault(_chain);
@@ -2123,12 +2127,21 @@ function update() {
     context.clearRect(0, 0, window.innerWidth, window.innerHeight);
     resize();
 
-    chain.moveTowards(currentMousePos.x, currentMousePos.y);
-    chain.draw(context);
+    for (var i = 0; i < chains.length; i++) {
+        var chain = chains[i];
+
+        chain.moveTowards(currentMousePos.x, currentMousePos.y);
+        chain.draw(context);
+    }
 }
 
+function getChains() {}
+
+var segCount = 5;
+var segMag = 75;
+
+var chains = [new _chain2.default(segCount, segMag, new _victor2.default(0, 200)), new _chain2.default(segCount, segMag, new _victor2.default(0, 250)), new _chain2.default(segCount, segMag, new _victor2.default(0, 300)), new _chain2.default(segCount, segMag, new _victor2.default(0, 350)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 200)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 250)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 300)), new _chain2.default(segCount, segMag, new _victor2.default(window.innerWidth, 350))];
 var canvas = document.getElementById('canvas');
-var chain = new _chain2.default(20, 20);
 var context;
 var currentMousePos = {
     x: 0,
@@ -2165,13 +2178,14 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Chain = function () {
-    function Chain(length, segMag) {
+    function Chain(length, segMag, anchor) {
         _classCallCheck(this, Chain);
 
         this.length = length;
+        this.anchor = anchor;
         this.segments = [];
 
-        var maxThickness = 10;
+        var maxThickness = 20;
 
         for (var i = 0; i < length; i++) {
             var parent = this.segments[i - 1];
@@ -2201,7 +2215,9 @@ var Chain = function () {
                 segment.moveTowards(target.x, target.y);
             }
 
-            this.anchorChainTo(window.innerWidth / 2, window.innerHeight);
+            if (this.anchor !== undefined) {
+                this.anchorChainTo(this.anchor.x, this.anchor.y);
+            }
         }
     }, {
         key: 'anchorChainTo',
