@@ -1,9 +1,7 @@
 # play_fetch
 
-Just a friendly game of fetch with some spiders.
-
-Small canvas to experiment with techniques to use in skeletal animation, specifically inverse kinematics.
-Also planning to explore ball physics and 2D space partitioning with a quadtree. 
+Small canvas to experiment with inverse kinematics.
+In the future, this should take into account joint restraints.
 
 ## Install
 
